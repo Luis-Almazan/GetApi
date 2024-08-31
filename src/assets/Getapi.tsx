@@ -1,73 +1,82 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from '../Style/Estudiantes.module.css'; // Importar el CSS Module
+import '../Style/Estudiantes.css';
 
-const Estudiantes = () => {
+const StudentSearchComponent = () => {
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredData, setFilteredData] = useState([]);
+  const [selectedEstudiante, setSelectedEstudiante] = useState(null);
 
+  // Carga inicial de datos
   useEffect(() => {
     axios.get('/api/estudiantes')
       .then(response => {
-        setData(response.data); // Aquí accedemos directamente al array
-        setFilteredData(response.data); // Inicialmente muestra todos los datos
+        setData(response.data);
       })
       .catch(error => {
         console.error("Hubo un error al obtener los datos:", error);
       });
   }, []);
 
+  // Manejador de búsqueda
   const handleSearch = () => {
-    const trimmedSearchTerm = searchTerm.trim(); // Eliminar espacios adicionales en el término de búsqueda
-    const filtered = data.filter(est => est.Carnet && est.Carnet.replace(/\s+/g, '').includes(trimmedSearchTerm.replace(/\s+/g, '')));
-    setFilteredData(filtered);
+    const trimmedSearchTerm = searchTerm.trim().replace(/\s+/g, '').toUpperCase();
+    const found = data.find(est => est.Carnet.replace(/\s+/g, '').toUpperCase() === trimmedSearchTerm);
+    setSelectedEstudiante(found || null);
   };
 
+  // Limpiar búsqueda y seleccionado
   const handleClear = () => {
     setSearchTerm('');
-    setFilteredData(data); // Restaurar la lista completa
+    setSelectedEstudiante(null);
   };
 
   return (
-    <div className={styles.formContainer}>
-      <h1 className={styles.heading}>Consulta de alumnos</h1>
-      <div className={styles.formGroup}>
-        <label className={styles.label}>Carnet:</label>
-        <input 
-          type="text" 
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
-          className={styles.input}
-        />
-      </div>
-      <div className={styles.buttonGroup}>
-        <button onClick={handleSearch} className={styles.button}>Buscar</button>
-        <button onClick={handleClear} className={styles.button}>Limpiar</button>
-      </div>
+    <>
+   <div className="form-container">
+   <h1>Consulta de alumnos</h1>
+   <div className="form-group">
+     <label>Carnet:</label>
+     <input 
+        type="text" 
+        value={searchTerm} 
+        onChange={(e) => setSearchTerm(e.target.value)} 
+      />
+   </div>
+   <div className="form-group">
+     <label>Nombres:</label>
+     <input 
+        type="text" 
+        value={selectedEstudiante ? selectedEstudiante.Estudiante : ''} 
+        disabled 
+      />
+   </div>
+   <div className="form-group">
+     <label>Correo Electrónico:</label>
+     <input 
+        type="text" 
+        value={selectedEstudiante ? selectedEstudiante.Email : ''} 
+        disabled 
+      />   
+   </div>
+   <div className="form-group">
+     <label>Sección:</label>
+     <input 
+        type="text" 
+        value={selectedEstudiante ? selectedEstudiante.Seccion : ''} 
+        disabled 
+      />
+      
+   </div>
+   <div className="button-group">
+      <button  type="button" onClick={handleSearch}>Buscar</button>
+      <button  type="button" onClick={handleClear}>Limpiar</button>
+      <button  type="button" onClick={() => window.location.reload()}>Cancelar</button>
+   </div>
+ </div>
+ </>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Carnet</th>
-            <th>Estudiante</th>
-            <th>Correo Electrónico</th>
-            <th>Sección</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map(estudiante => (
-            <tr key={estudiante._id}>
-              <td>{estudiante.Carnet}</td>
-              <td>{estudiante.Estudiante}</td>
-              <td>{estudiante.Email}</td>
-              <td>{estudiante.Seccion}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 };
 
-export default Estudiantes;
+export default StudentSearchComponent;

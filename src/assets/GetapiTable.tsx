@@ -10,8 +10,8 @@ const Estudiantes = () => {
   useEffect(() => {
     axios.get('/api/estudiantes')
       .then(response => {
-        setData(response.data.Alumnos);
-        setFilteredData(response.data.Alumnos); // Inicialmente muestra todos los datos
+        setData(response.data); // Aquí accedemos directamente al array
+        setFilteredData(response.data); // Inicialmente muestra todos los datos
       })
       .catch(error => {
         console.error("Hubo un error al obtener los datos:", error);
@@ -19,10 +19,10 @@ const Estudiantes = () => {
   }, []);
 
   const handleSearch = () => {
-    const filtered = data.filter(est => est.Carnet && est.Carnet.includes(searchTerm));
+    const trimmedSearchTerm = searchTerm.trim(); // Eliminar espacios adicionales en el término de búsqueda
+    const filtered = data.filter(est => est.Carnet && est.Carnet.replace(/\s+/g, '').includes(trimmedSearchTerm.replace(/\s+/g, '')));
     setFilteredData(filtered);
   };
-  
 
   const handleClear = () => {
     setSearchTerm('');
